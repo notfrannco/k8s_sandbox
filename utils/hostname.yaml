@@ -1,0 +1,19 @@
+---
+- name: Hostname configuration
+  hosts: all
+  gather_facts: true
+  strategy: free
+  become: true
+  vars:
+    local_dns: "127.0.0.1 localhost {{ inventory_hostname }}"
+  tasks:
+    - name: Set hostname
+      hostname:
+       name: "{{ inventory_hostname }}"
+
+    - name: Configure hostname in the /etc/hosts
+      replace:
+        backup: yes
+        dest: /etc/hosts
+        regexp: '(^127.0.0.1)(.*)$'
+        replace: '{{ local_dns }}'

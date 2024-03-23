@@ -1,0 +1,6 @@
+---
+- name: Hardening CIS compliance
+  hosts: all
+  become: true
+  roles:
+    - role: hardening

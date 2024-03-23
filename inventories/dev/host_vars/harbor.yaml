@@ -1,0 +1,7 @@
+---
+oscap_profile:
+  - xccdf_org.ssgproject.content_profile_cis_level1_server
+  - xccdf_org.ssgproject.content_profile_cis_level2_server
+  - xccdf_org.ssgproject.content_profile_standard
+
+ssg_file: "ssg-ubuntu2204-ds.xml"

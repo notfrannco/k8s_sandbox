@@ -1,0 +1,45 @@
+---
+- name: Create xml scan report
+  shell: >
+    oscap xccdf eval --profile {{ item }}
+    --results-arf /tmp/{{ item }}_{{ inventory_hostname }}.xml {{ ssg_dir }}{{ ssg_file }}
+  register: result
+  ignore_errors: yes
+  failed_when: result.rc >= 3
+  loop: "{{ oscap_profile }}"
+  tags:
+    - run_report
+
+- name: create a html report
+  script:
+    cmd: files/script/scap.sh {{ item }}_{{ inventory_hostname }}.xml
+    chdir: /tmp/
+  loop: "{{ oscap_profile }}"
+  tags:
+    - run_report
+
+- name: get the list of xml and html reports
+  shell: "ls -l *.xml *.html | awk '{ print $NF }' | grep xccdf"
+  args:
+    chdir: /tmp
+  register: list_of_reports
+  tags:
+    - run_report
+
+- name: copy the arf report in the repo server
+  fetch:
+    src: /tmp/{{ item }}
+    dest: "{{ report_dest | default('files') }}"
+    flat: yes
+  loop: "{{ list_of_reports.stdout_lines }}"
+  tags:
+    - run_report
+
+- name: Clean up
+  file:
+    path: /tmp/{{ item }}
+    state: absent
+  loop: "{{ list_of_reports.stdout_lines }}"
+  tags:
+    - run_report
+...

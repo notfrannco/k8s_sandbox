@@ -1,0 +1,40 @@
+# primero correr el hardening
+ansible-playbook utils/hardening
+
+(opcional) correr el dns local si no se tiene configurado dns
+ansible-playbook utils/hostname.yml
+
+
+# add el usuario admin ansible, configurar la variable acorde
+# se requiere de un usuario admin(root), para la configuracion inicial 
+# -b -> become (sudo)
+# -k -> ask password in cli
+ansible-playbook utils/add_ansible_user.yml -b -k
+
+
+
+# install k8s dependencies (run on all hosts)
+ansible-playbook k8s_dependecies.yml
+
+
+# install initial cluster
+# configure control plane
+ansible-playbook k8s_master.yml
+
+# configure workers
+ansible-playbook k8s_worker.yml
+
+
+# Add new nodes
+# run the prereq step
+# 1) add ansible admin user
+#   $ ansible-playbook utils/add_ansible_user.yml -u <USER> -k -b -l <NEW_HOST_NAME>
+# 2) hardening
+# 3) install k8s dependencies
+# control plane
+
+
+# worker
+# configure
+ansible-playbook k8s_dependecies.yml -l <new_worker>
+ansible-playbook k8s_worker.yml

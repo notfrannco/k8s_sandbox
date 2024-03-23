@@ -1,0 +1,16 @@
+table inet filter {
+        chain input {
+                type filter hook input priority filter; policy accept;
+                ip saddr 127.0.0.0/8 counter packets 1 bytes 220 accept
+                iif "lo" accept
+                ip6 saddr ::1 counter packets 0 bytes 0 accept
+        }
+
+        chain forward {
+                type filter hook forward priority filter; policy accept;
+        }
+
+        chain output {
+                type filter hook output priority filter; policy accept;
+        }
+}

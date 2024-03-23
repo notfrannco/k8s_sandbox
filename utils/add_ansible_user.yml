@@ -1,0 +1,48 @@
+---
+- name: Playbook to add ansible admin user
+  hosts: all
+  vars:
+    ansible_local_user: ansible
+    pub_key: /home/jfranco/.ssh/id_rsa.pub
+  tasks:
+    - name: make sure the group {{ ansible_local_user }} exists
+      group:
+        name: "{{ ansible_local_user }}"
+        state: present
+        system: yes
+
+    - name: add {{ ansible_local_user }} sudoers file
+      copy:
+        content: "%{{ ansible_local_user }} ALL=(ALL) NOPASSWD: ALL"
+        dest: /etc/sudoers.d/{{ ansible_local_user }}
+        validate: '/usr/sbin/visudo -cf %s'
+        mode: '0440'
+
+    - name: add user {{ ansible_local_user }}
+      user:
+        name: "{{ ansible_local_user }}"
+        group: "{{ ansible_local_user }}"
+        home: "/home/{{ ansible_local_user }}/"
+        shell: /bin/bash
+        state: present
+        expires: -1
+        system: yes
+        password: "$6$Moax5e8EkpgMswj9$EGMY9DSGPAMAd0zw38Gsowzsx4Vre4LtIhBgIr7fwWvkRtfCGJeCrcdgWuUlUYxyNjlwMwnicGnD1aJnjga6v1"
+      notify:
+        - ansible password does not expires
+
+    - name: Set ssh keybase login
+      authorized_key:
+        user: "{{ ansible_local_user }}"
+        path: /home/{{ ansible_local_user }}/.ssh/authorized_keys
+        key: "{{ item }}"
+      with_file:
+        #- /home/{{ ansible_local_user }}/.ssh/id_rsa.pub
+        - "{{ pub_key }}"
+      tags:
+        - ssh_keybase_login
+        
+  handlers:
+    - name: ansible password does not expires
+      command: "chage -m -1 -M -1 -W -1 -E -1 {{ ansible_local_user }}"
+

@@ -1,0 +1,12 @@
+---
+# include the hardening for the specific OS family
+
+# initial setup 
+- include: setup.yaml
+  when: ansible_os_family == "Debian"
+
+- include: cis-level-1-ubuntu2204.yaml
+  when: ansible_os_family == "Debian"
+
+- include: scap_report.yaml
+  when: ansible_os_family == "Debian"
