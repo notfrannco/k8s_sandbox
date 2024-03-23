@@ -1,10 +1,9 @@
-- hosts: master
+- hosts: "{{ target | default('master') }}"
   become: yes
   vars:
     local_user: ansible # ansible user
   tasks:
     - name: initialize the cluster (this could take some time)
-      #shell: kubeadm init  >> cluster_initialized.log
       shell: sudo kubeadm init --control-plane-endpoint={{ ansible_default_ipv4.address }}:6443 --upload-certs >> cluster_initialized.log
       args:
         chdir: "/home/{{ local_user }}"

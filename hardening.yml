@@ -1,6 +1,6 @@
 ---
 - name: Hardening CIS compliance
-  hosts: all
+  hosts: "{{ target | default('all') }}"
   become: true
   roles:
     - role: hardening

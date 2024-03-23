@@ -1,4 +1,4 @@
-- hosts: all
+- hosts: "{{ target | default('all') }}"
   become: yes
   vars:
     k8s_version: "1.29.3"
@@ -79,7 +79,6 @@
 
     - name: add Kubernetes apt-key
       get_url:
-        #url: https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key
         url: https://pkgs.k8s.io/core:/stable:/v{{ k8s_repo_version }}/deb/Release.key
         dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
         mode: '0644'
@@ -157,14 +156,13 @@
     - name: reboot and wait for reboot to complete
       reboot:
 
-- hosts: master
+- hosts: "{{ target | default('master') }}"
   become: yes
   vars:
     k8s_version: "1.29.3"
   tasks:
     - name: install Kubectl
       apt:
-        #name: kubectl=1.29.*
         name: kubectl={{ k8s_version }}*
         state: present
         force: yes # allow downgrades

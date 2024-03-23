@@ -1,9 +1,10 @@
 ---
 - name: Playbook to add ansible admin user
-  hosts: all
+  hosts: "{{ target | default('all') }}"
   vars:
     ansible_local_user: ansible
-    pub_key: /home/jfranco/.ssh/id_rsa.pub
+    #pub_key: /home/jfranco/.ssh/id_rsa.pub
+    pub_key: ../files/id_rsa.pub
   tasks:
     - name: make sure the group {{ ansible_local_user }} exists
       group:
@@ -37,7 +38,6 @@
         path: /home/{{ ansible_local_user }}/.ssh/authorized_keys
         key: "{{ item }}"
       with_file:
-        #- /home/{{ ansible_local_user }}/.ssh/id_rsa.pub
         - "{{ pub_key }}"
       tags:
         - ssh_keybase_login

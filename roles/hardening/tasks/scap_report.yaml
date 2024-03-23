@@ -32,6 +32,7 @@
     dest: "{{ report_dest | default('files') }}"
     flat: yes
   loop: "{{ list_of_reports.stdout_lines }}"
+  ignore_errors: yes
   tags:
     - run_report
 
