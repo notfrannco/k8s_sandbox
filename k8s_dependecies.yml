@@ -139,7 +139,8 @@
         enabled: yes
 
     - name: load br_netfilter kernel module
-      modprobe:
+      #modprobe:
+      community.general.modprobe:
         name: br_netfilter
         state: present
 
