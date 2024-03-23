@@ -21,6 +21,7 @@
     - name: disable SWAP (Kubeadm requirement)
       shell: |
         swapoff -a
+      changed_when: false
 
     - name: disable SWAP in fstab (Kubeadm requirement)
       replace:
@@ -58,6 +59,7 @@
 
     - name: apply sysctl params without reboot
       command: sysctl --system
+      changed_when: false
 
     - name: install APT Transport HTTPS
       apt:
@@ -103,12 +105,14 @@
 
     - name: add Containerd configuration
       shell: /usr/bin/containerd config default > /etc/containerd/config.toml
+      changed_when: false
 
     - name: configuring the systemd cgroup driver for Containerd
       lineinfile:
         path: /etc/containerd/config.toml
         regexp: '            SystemdCgroup = false'
         line: '            SystemdCgroup = true'
+      changed_when: false
 
     - name: enable the Containerd service and start it
       systemd:
@@ -116,6 +120,7 @@
         state: restarted
         enabled: yes
         daemon-reload: yes
+      changed_when: false
 
     - name: install Kubelet
       apt:
@@ -128,7 +133,6 @@
 
     - name: install Kubeadm
       apt:
-        #name: kubeadm=1.29.*
         name: kubeadm={{ k8s_version }}*
         state: present
 
@@ -155,6 +159,7 @@
 
     - name: reboot and wait for reboot to complete
       reboot:
+      when: update.changed
 
 - hosts: "{{ target | default('master') }}"
   become: yes

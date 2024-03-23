@@ -4,3 +4,7 @@ k8s-control-plane ansible_host=192.168.100.68
 [workers]
 k8s-worker-1 ansible_host=192.168.100.69
 k8s-worker-2 ansible_host=192.168.100.70
+
+[control-planes]
+k8s-control-plane-2
+k8s-control-plane-3

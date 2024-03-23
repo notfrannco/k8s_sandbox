@@ -21,7 +21,7 @@
 
 
 
-- hosts: "{{ target | default('k8s-worker-2') }}" # edit only new master list
+- hosts: "{{ target | default('control-planes') }}" # edit only new master list
   become: yes
   vars:
     local_user: ansible

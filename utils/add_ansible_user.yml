@@ -45,4 +45,3 @@
   handlers:
     - name: ansible password does not expires
       command: "chage -m -1 -M -1 -W -1 -E -1 {{ ansible_local_user }}"
-
