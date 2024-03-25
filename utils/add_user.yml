@@ -1,0 +1,23 @@
+---
+- name: Playbook to add user
+  hosts: "{{ target | default('all') }}"
+  become: true
+  vars:
+    local_user: testuser
+    passwd: "password"
+  tasks:
+    - name: make sure the group {{ local_user }} exists
+      group:
+        name: "{{ local_user }}"
+        state: present
+        system: yes
+
+    - name: add user {{ local_user }}
+      user:
+        name: "{{ local_user }}"
+        group: "{{ local_user }}"
+        home: "/home/{{ local_user }}/"
+        shell: /bin/bash
+        state: present
+        password: "{{  passwd  | password_hash('sha512') }}"
+        system: yes
