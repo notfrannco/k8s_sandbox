@@ -1,5 +1,5 @@
 - hosts: "{{ target | default('master') }}"
-  become: yes
+  #become: yes
   vars:
     local_user: ansible # ansible user
   tasks:
@@ -18,6 +18,8 @@
         mode: 0755
 
     - name: copy admin.conf to user's kube config
+      become: yes
+      #become_user: "{{ local_user }}"
       copy:
         src: /etc/kubernetes/admin.conf
         dest: /home/{{ local_user }}/.kube/config
@@ -25,6 +27,7 @@
         owner: "{{ local_user }}"
 
     - name: make sure curl is present
+      become: yes
       apt:
         name: curl
         state: present
@@ -44,12 +47,15 @@
         dest: "/home/{{ local_user }}"
         creates: cilium-main
         remote_src: yes
+        owner: "{{ local_user }}"
+        group: "{{ local_user }}"
       register:  cellium
 
     - name: install cellium using helm
       shell: helm install cilium ./cilium --namespace kube-system > cillium_install.log
       args:
-        chdir: $HOME/cilium-main/install/kubernetes
+        #chdir: "/home/{{ local_user }}/cilium-main/install/kubernetes"
+        chdir: "/home/ansible/cilium-main/install/kubernetes/"
         creates: cillium_install.log
       ignore_errors: yes
       when: cellium.changed
