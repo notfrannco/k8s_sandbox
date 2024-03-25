@@ -24,11 +24,40 @@
         remote_src: yes
         owner: "{{ local_user }}"
 
-    - name: install Pod network
-      become: yes
-      become_user: "{{ local_user }}"
-      #shell: kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml >> pod_network_setup.log
-      shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml >> pod_network_setup.log
+    - name: make sure curl is present
+      apt:
+        name: curl
+        state: present
+
+    #- name: install Pod network
+    #  become: yes
+    #  become_user: "{{ local_user }}"
+    #  #shell: kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml >> pod_network_setup.log
+    #  shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml >> pod_network_setup.log
+    #  args:
+    #    chdir: $HOME
+    #    creates: pod_network_setup.log
+
+    - name: download Cellium 
+      unarchive:
+        src: https://github.com/cilium/cilium/archive/main.tar.gz
+        dest: "/home/{{ local_user }}"
+        creates: cilium-main
+        remote_src: yes
+      register:  cellium
+
+    - name: install cellium using helm
+      shell: helm install cilium ./cilium --namespace kube-system > cillium_install.log
       args:
-        chdir: $HOME
-        creates: pod_network_setup.log
+        chdir: $HOME/cilium-main/install/kubernetes
+        creates: cillium_install.log
+      ignore_errors: yes
+      when: cellium.changed
+
+    - name: Configure cellium cli client
+      script:
+        cmd: files/cni/cellium_cli.sh
+      ignore_errors: yes
+      when: cellium.changed
+      tags:
+        - custom_script
