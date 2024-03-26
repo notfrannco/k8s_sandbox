@@ -12,8 +12,7 @@
         creates: metalLB_manifest_install.log
       register: install_metallb
 
-    - name: copy admin.conf to user's kube config
-      #become_user: "{{ local_user }}"
+    - name: copy the {{ values_yaml }}
       copy:
         src: ./files/{{ values_yaml }}
         dest: /home/{{ local_user }}/
@@ -25,3 +24,8 @@
       args:
         chdir: "/home/{{ local_user }}"
       when: install_metallb.changed
+
+    - name: clean up
+      file:
+        path: /home/{{ local_user }}/{{ values_yaml }}
+        state: absent
