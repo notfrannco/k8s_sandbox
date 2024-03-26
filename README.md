@@ -7,6 +7,9 @@ Playbook de ansible que instala un cluster de kubernetes 1.29 sobre Ubuntu 22.04
 * Servidor Bastion para el ansible.
 * Creacion de un usuario admin ansible para administrar los servidores
 
+## Diagrama de flujo (working progress )
+![diagrama_inicial](https://github.com/notfrannco/k8s_sandbox/assets/19764680/657a918d-28b9-4d99-8e10-7796b0748773)
+
 
 ## Create Ansible Admin user
 Utilizar el playbook add_ansible_user.yml, y especificar el usuario admin(root o usuario con sudo) para la configuracion inicial <br /><br />
