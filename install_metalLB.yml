@@ -1,0 +1,27 @@
+- name: Playbook fron install and configuration of metalLB
+  hosts: "{{ target | default('master') }}"
+  #become: yes
+  vars:
+    local_user: ansible # ansible user
+    values_yaml: metalLB-values.yml
+  tasks:
+    - name: Install MetalLB manifest
+      shell: kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.3/config/manifests/metallb-native.yaml >> metalLB_manifest_install.log
+      args:
+        chdir: "/home/{{ local_user }}"
+        creates: metalLB_manifest_install.log
+      register: install_metallb
+
+    - name: copy admin.conf to user's kube config
+      #become_user: "{{ local_user }}"
+      copy:
+        src: ./files/{{ values_yaml }}
+        dest: /home/{{ local_user }}/
+        owner: "{{ local_user }}"
+      when: install_metallb.changed
+
+    - name: Configure IPAddressPool and l2advertisement
+      shell: kubectl apply -f  {{ values_yaml }}
+      args:
+        chdir: "/home/{{ local_user }}"
+      when: install_metallb.changed
