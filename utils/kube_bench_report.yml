@@ -34,10 +34,10 @@
         - "/var/log/kube-bench-{{ inventory_hostname }}.log"
         - "/var/log/kube-bench-{{ inventory_hostname }}.json"
 
-    #- name: Clean up
-    #  file:
-    #    path: "{{ item }}"
-    #    state: absent
-    #  loop:
-    #    - "/var/log/kube-bench-{{ inventory_hostname }}.log"
-    #    - "/var/log/kube-bench-{{ inventory_hostname }}.json"
+    - name: Clean up
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "/var/log/kube-bench-{{ inventory_hostname }}.log"
+        - "/var/log/kube-bench-{{ inventory_hostname }}.json"

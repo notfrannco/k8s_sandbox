@@ -82,6 +82,7 @@
       when: cellium.changed
       tags:
         - custom_script
+
     - name: Post run script
       become: yes
       script:

@@ -244,6 +244,7 @@
         state: present
       tags:
         - snap
+
     - name: Post run script
       become: yes
       script:
