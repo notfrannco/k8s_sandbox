@@ -2,7 +2,16 @@
   #become: yes
   vars:
     local_user: ansible # ansible user
+    init_script: "files/script/startup.sh"
+    postrun_script: "files/script/postrun.sh"
   tasks:
+    - name: Init script
+      become: yes
+      script:
+        cmd: "{{ init_script }}"
+        chdir: /tmp/
+      changed_when: false
+
     - name: initialize the cluster (this could take some time)
       shell: sudo kubeadm init --control-plane-endpoint={{ ansible_default_ipv4.address }}:6443 --upload-certs >> cluster_initialized.log
       args:
@@ -25,6 +34,12 @@
         dest: /home/{{ local_user }}/.kube/config
         remote_src: yes
         owner: "{{ local_user }}"
+
+    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+      become: yes
+      shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
+      when: "ansible_os_family == 'Debian'"
+      changed_when: false
 
     - name: make sure curl is present
       become: yes
@@ -67,3 +82,9 @@
       when: cellium.changed
       tags:
         - custom_script
+    - name: Post run script
+      become: yes
+      script:
+        cmd: "{{ postrun_script }}"
+        chdir: /tmp/
+      changed_when: false

@@ -1,0 +1,43 @@
+---
+- name: Run a kube-bench report
+  hosts: all
+  become: yes
+  vars:
+    report_dest: "../resources/kube-bench-reports/"
+  tasks:
+    - name: Run a regular report
+      become: yes
+      shell: kube-bench
+      register: kube_bench_output
+
+    - name: Run a report with json output
+      become: yes
+      shell: kube-bench --json
+      register: kube_bench_output_json
+
+    - name: save the kube-bench output to a file
+      copy:
+        content: "{{ kube_bench_output.stdout }}"
+        dest: "/var/log/kube-bench-{{ inventory_hostname }}.log"
+
+    - name: save the kube-bench-json output to a file
+      copy:
+        content: "{{ kube_bench_output_json.stdout }}"
+        dest: "/var/log/kube-bench-{{ inventory_hostname }}.json"
+
+    - name: copy the reports to ansible master
+      fetch:
+        src: "{{ item }}"
+        dest: "{{ report_dest }}"
+        flat: yes
+      loop:
+        - "/var/log/kube-bench-{{ inventory_hostname }}.log"
+        - "/var/log/kube-bench-{{ inventory_hostname }}.json"
+
+    #- name: Clean up
+    #  file:
+    #    path: "{{ item }}"
+    #    state: absent
+    #  loop:
+    #    - "/var/log/kube-bench-{{ inventory_hostname }}.log"
+    #    - "/var/log/kube-bench-{{ inventory_hostname }}.json"

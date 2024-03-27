@@ -3,10 +3,24 @@
   vars:
     k8s_version: "1.29.3"
     k8s_repo_version: "1.29" # just major version
+    init_script: "files/script/startup.sh"
+    postrun_script: "files/script/postrun.sh"
   tasks:
     - fail:
        msg: "OS should be Ubuntu 22.04, not {{ ansible_distribution }} {{ ansible_distribution_version }}"
       when: ansible_distribution != 'Ubuntu' or ansible_distribution_version != '22.04'
+
+    - name: Init script
+      become: yes
+      script:
+        cmd: "{{ init_script }}"
+        chdir: /tmp/
+      changed_when: false
+
+    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+      shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
+      when: "ansible_os_family == 'Debian'"
+      changed_when: false
 
     - name: update APT packages
       apt:
@@ -61,6 +75,11 @@
       command: sysctl --system
       changed_when: false
 
+    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+      shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
+      when: "ansible_os_family == 'Debian'"
+      changed_when: false
+
     - name: install APT Transport HTTPS
       apt:
         name: apt-transport-https
@@ -88,10 +107,14 @@
 
     - name: add Kubernetes' APT repository
       apt_repository:
-        #repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /"
         repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc] https://pkgs.k8s.io/core:/stable:/v{{ k8s_repo_version }}/deb/ /"
         state: present
         update_cache: yes
+
+    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+      shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
+      when: "ansible_os_family == 'Debian'"
+      changed_when: false
 
     - name: install Containerd
       apt:
@@ -122,6 +145,11 @@
         daemon-reload: yes
       changed_when: false
 
+    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+      shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
+      when: "ansible_os_family == 'Debian'"
+      changed_when: false
+
     - name: install Kubelet
       apt:
         #name: kubelet=1.29.*
@@ -130,6 +158,11 @@
         update_cache: true
       tags:
         - install_kubelet
+
+    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+      shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
+      when: "ansible_os_family == 'Debian'"
+      changed_when: false
 
     - name: install Kubeadm
       apt:
@@ -161,11 +194,32 @@
       reboot:
       when: update.changed
 
+    - name: Post run script
+      become: yes
+      script:
+        cmd: "{{ postrun_script }}"
+        chdir: /tmp/
+      changed_when: false
+
 - hosts: "{{ target | default('master') }}"
   become: yes
   vars:
     k8s_version: "1.29.3"
+    init_script: "files/script/startup.sh"
+    postrun_script: "files/script/postrun.sh"
   tasks:
+    - name: Init script
+      become: yes
+      script:
+        cmd: "{{ init_script }}"
+        chdir: /tmp/
+      changed_when: false
+
+    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+      shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
+      when: "ansible_os_family == 'Debian'"
+      changed_when: false
+
     - name: install Kubectl
       apt:
         name: kubectl={{ k8s_version }}*
@@ -179,9 +233,20 @@
       tags:
         - snap
 
+    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+      shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
+      when: "ansible_os_family == 'Debian'"
+      changed_when: false
+
     - name: install etcd-client
       apt:
         name: etcd-client
         state: present
       tags:
         - snap
+    - name: Post run script
+      become: yes
+      script:
+        cmd: "{{ postrun_script }}"
+        chdir: /tmp/
+      changed_when: false

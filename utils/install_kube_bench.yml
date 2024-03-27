@@ -1,0 +1,45 @@
+---
+- name: Kubernetes Security
+  hosts: all
+  #become: true
+  vars:
+    version: "0.7.2" # kube-bench version
+    local_user: ansible
+    init_script: "../files/script/startup.sh"
+    postrun_script: "../files/script/postrun.sh"
+  tasks:
+    - name: Init script
+      become: yes
+      script:
+        cmd: "{{ init_script }}"
+        chdir: /tmp/
+      changed_when: false
+
+    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+      become: yes
+      shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
+      when: "ansible_os_family == 'Debian'"
+      changed_when: false
+
+    - name: make sure curl is present
+      become: yes
+      apt:
+        name: curl
+        state: present
+
+    - name: Gather the package facts
+      package_facts:
+        manager: auto
+
+    - name: Install kube-bench
+      become: yes
+      apt:
+        deb: https://github.com/aquasecurity/kube-bench/releases/download/v{{ version }}/kube-bench_{{ version }}_linux_amd64.deb
+      when: "'kube-bench' not in ansible_facts.packages and ansible_os_family == 'Debian'"
+
+    - name: Post run script
+      become: yes
+      script:
+        cmd: "{{ postrun_script }}"
+        chdir: /tmp/
+      changed_when: false
