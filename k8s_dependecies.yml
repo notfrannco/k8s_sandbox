@@ -71,6 +71,28 @@
         - 'net.ipv4.ip_forward                 = 1'
         - 'net.bridge.bridge-nf-call-ip6tables = 1'
 
+      #4.2.6	Ensure that the --protect-kernel-defaults argument is set to true
+    - name: create an empty file for kubelet sysctl params
+      copy:
+        content: ""
+        dest: /etc/sysctl.d/90-kubelet.conf
+        force: no
+      tags:
+        - cis_4_2_6_ensure_protect_kernel_defaults_argument
+
+    - name: configure sysctl params for Kubelet
+      lineinfile:
+        path: /etc/sysctl.d/90-kubelet.conf
+        line: "{{ item }}"
+      with_items:
+        - 'vm.overcommit_memory = 1'
+        - 'kernel.panic         = 10'
+        - 'kernel.panic_on_oops = 1'
+      tags:
+        - cis_4_2_6_ensure_protect_kernel_defaults_argument
+
+
+
     - name: apply sysctl params without reboot
       command: sysctl --system
       changed_when: false
@@ -144,6 +166,16 @@
         enabled: yes
         daemon-reload: yes
       changed_when: false
+
+    - name: configure crictl default config file for containerd
+      template:
+        src: templates/crictl.j2
+        dest: /etc/crictl.yaml
+        owner: root
+        group: root
+        mode: "0644"
+      tags:
+        - temp
 
     - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
       shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
