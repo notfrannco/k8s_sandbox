@@ -24,7 +24,19 @@
 
 
 <br /> Inicialmente se utilizaran los roles definidos anteriormente y se modificaran de acuerdo a necesidad en cada proyecto.
+<br /> 
+<br /> El siguiente grafico ilustra los detalles de rolebinding para los casos que se utilizaran inicialmente
+
+![Untitled Diagram-Copy of RBAC_conbinations](https://github.com/notfrannco/k8s_sandbox/assets/19764680/fb32a4da-5dc3-4073-ad1c-5f3f7f2c7d24)
+
+
+
+
+
+
+
 <br /> El siguiente grafico ilustra el diagrama general del scope de los permisos.
+
 
 ![Untitled Diagram-rbac_namespace](https://github.com/notfrannco/k8s_sandbox/assets/19764680/7c721049-e396-40a1-8cd4-a16b22f7da1f)
 
