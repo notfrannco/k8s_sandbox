@@ -1,0 +1,19 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  name: basic-user
+  namespace: "{{ k8s_namespace | default('default') }}"
+rules:
+- apiGroups: [""]
+  resources: ["bindings", "configmaps", "endpoints", "events", "limitranges", "persistentvolumeclaims", "pods", "podtemplates", "replicationcontrollers", "secrets", "serviceaccounts", "services"]
+  verbs: ["*"]
+- apiGroups: [""]
+  resources: ["resourcequotas"]
+  verbs: ["get", "list"]
+- apiGroups: ["apps"]
+  resources: ["controllerrevisions", "daemonsets", "deployments", "replicasets", "statefulsets"]
+  verbs: ["*"]
+- apiGroups: ["autoscaling", "batch", "cilium.io", "events.k8s.io", "networking.k8s.io", "storage.k8s.io"]
+  resources: ["horizontalpodautoscalers", "cronjobs", "jobs", "ingresses", "networkpolicies"]
+  verbs: ["get", "list", "watch"]

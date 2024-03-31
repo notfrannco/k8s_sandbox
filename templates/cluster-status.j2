@@ -1,0 +1,9 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: cluster-status
+rules:
+- apiGroups: ["", "certificates.k8s.io", "networking.k8s.io", "storage.k8s.io"]
+  resources: ["componentstatuses", "namespaces","nodes", "persistentvolumes", "certificatesigningrequests", "ingressclasses", "storageclasses", "volumeattachments"]
+  verbs: ["get", "list"]

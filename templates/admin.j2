@@ -1,0 +1,25 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  name: admin
+  namespace: "{{ k8s_namespace | default('default') }}"
+rules:
+- apiGroups:
+  - ""
+  - apps
+  - authorization.k8s.io
+  - autoscaling
+  - batch
+  - cilium.io
+  - coordination.k8s.io
+  - discovery.k8s.io
+  - events.k8s.io
+  - networking.k8s.io
+  - policy
+  - rbac.authorization.k8s.io
+  - storage.k8s.io
+  resources:
+  - "*"
+  verbs:
+  - "*"

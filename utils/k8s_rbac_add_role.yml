@@ -1,0 +1,29 @@
+- hosts: "{{ target | default('master') }}"
+  vars:
+    local_user: ansible # ansible user
+    user: "{{ user | default('test') }}"
+    k8s_namespace: "{{ ns | default('default')  }}"
+    role: "{{ role | default('basic-user') }}"
+    k8s_script: "../files/script/k8s_rbac_config.sh"
+    default_roles:
+      - basic-user
+      - admin
+      - cluster-reader
+      - cluster-status
+  tasks:
+    - name: copy the default roles templates
+      template:
+        src: ../templates/{{ item }}.j2
+        dest: /home/{{ local_user }}/{{ item }}.yaml
+      loop: "{{ default_roles }}"
+        
+    - name: run a script
+      script: 
+        cmd: "{{ k8s_script }} {{ user }} {{ ns }} {{ role }} >> script.log"
+      changed_when: false
+
+    - name: clean up
+      file:
+        path: /home/{{ local_user}}/{{ item }}.yaml
+        state: absent
+      loop: "{{ default_roles }}"

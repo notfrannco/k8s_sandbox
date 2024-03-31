@@ -1,0 +1,50 @@
+# list of verbs
+https://kubernetes.io/docs/reference/access-authn-authz/authorization/#determine-the-request-verb
+
+
+---------------------------------------------------------------------------------------------------------------------------------------
+default  role   | scope     | description
+---------------------------------------------------------------------------------------------------------------------------------------
+cluster-admin   | cluster   | es un super user, que es cluster admin
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+admin           |           | A project manager. If used in a local binding, an admin has rights to view any resource in the project and modify any resource in the project except for quota.
+                | namespace | Admin del proyecto, puede editar y modificar todo en el namespace
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+basic-user      | namespace | similar a admin, pero no puede modificar roles, networkpolicies, quota
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+cluster-status  | cluster   | A user that can get basic cluster status information.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+cluster-reader  | cluster   | A user that can get or view all resources, but can't edit or delete (audit user)
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+# ya edit rolebiding
+# install yq
+# wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && chmod +x /usr/bin/yq
+# add user to a list
+# without the "-i" to do a dry-run
+yq -i ' .subjects += {"apiGroup": "rbac.authorization.k8s.io", "kind": "User", "name": "jane"}' test.yaml
+
+# add user if dont exist, but the list is not empty
+yq 'with(.subjects; select(all_c(.name != "jane")) | . += {"apiGroup": "rbac.authorization.k8s.io", "kind": "User", "name": "jane"} )' test.yaml
+
+# add user if the roledinbinds is emtpy
+yq '.subjects += [{"apiGroup": "rbac.authorization.k8s.io", "kind": "User", "name": "jane"}] ' empty.yaml 
+
+# delete user from a list https://github.com/mikefarah/yq/discussions/1340
+yq 'del(.subjects[] | select(.name == "jane"))' test.yaml
+
+
+# ansible
+var:
+user: username
+role: cluster-admin/admin/basic-user/cluster-status/cluster-reader
+namespace: if needit (validate in playbook) 
+1) create the role in the namespace if it dosent exist
+2) create the rolebiding especifying the user
+
+
+# test de script
+./test.sh juan default basic-user,cluster-reader,cluster-status
