@@ -95,5 +95,16 @@ Para agregar un nuevo worker se puede volver a ejecutar el playbook "k8s_worker.
 `$ ansible-playbook k8s_worker.yml -l worker-3:worker-4` # ejecutar solo en el nodo nuevo worker-3 y worker-4<br />
 
 
+# RBAC
+## Configure roles for specfic users
+agrega el role "basic-user" al usuario "jose" en el namespace "default"<br />
+ `$ ansible-playbook  k8s_rbac/k8s_rbac_add_role.yml -e user=jose -e ns=default -e role=basic-user` 
 
+ <br />Se puede especificar varios roles separados por  ","  <br />
+ `$ ansible-playbook  k8s_rbac/k8s_rbac_add_role.yml -e user=jose -e ns=default -e role=basic-user,admin,cluster-reader` 
+
+
+## Configure default .kube/config for specific user
+Configuracion default de pki, se deben especificar el usuario y los dias de validez <br />
+ `$ ansible-playbook k8s_rbac/k8s_create_credential.yml -e user=jose -e days=30` 
 
