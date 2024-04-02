@@ -103,8 +103,16 @@ agrega el role "basic-user" al usuario "jose" en el namespace "default"<br />
  <br />Se puede especificar varios roles separados por  ","  <br />
  `$ ansible-playbook  k8s_rbac/k8s_rbac_add_role.yml -e user=jose -e ns=default -e role=basic-user,admin,cluster-reader` 
 
+ <br />**Add new cluster admin user** <br />
+ `$ ansible-playbook  k8s_rbac/k8s_rbac_add_role.yml -e user=jose -e role=cluster-admin` 
 
-## Configure default .kube/config for specific user
+  <br />**Delete** user role<br />
+ `$ ansible-playbook  k8s_rbac/k8s_rbac_delete_user_role.yml -e user=jose -e ns=default -e role=basic-user,admin,cluster-reader`
+
+   <br />**Delete** user role que es cluster-admin<br />
+ `$ ansible-playbook  k8s_rbac/k8s_rbac_delete_user_role.yml -e user=jose -e role=cluster-admin`
+
+## Configure default .kube/config for specific user (pki)
 Configuracion default de pki, se deben especificar el usuario y los dias de validez <br />
  `$ ansible-playbook k8s_rbac/k8s_create_credential.yml -e user=jose -e days=30` 
 
