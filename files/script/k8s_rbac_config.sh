@@ -19,12 +19,12 @@ echo "--------------------------------------------------------------------------
 if [[ $# == 2 ]]; then # cluster roles
    echo "only 2 args pass" >> script.log
    # if role is cluster admin
-   if [[ $role == "cluster-admin" ]]; then # cluster admin role
+   if [[ $2 == "cluster-admin" ]]; then # cluster admin role
       echo "cluster admin role" >> script.log
-      kubectl get clusterrolebinding $role -o yaml > lab1-$role-binding.yaml # get temp yaml file
-      yq -i 'with(.subjects; select(all_c(.name != "'$user'")) | . += {"apiGroup": "rbac.authorization.k8s.io", "kind": "User", "name": "'$user'"} )' lab1-$role-binding.yaml &> /dev/null
-      kubectl apply -f lab1-$role-binding.yaml
-      rm lab1-$role-binding.yaml
+      kubectl get clusterrolebinding $2 -o yaml > lab1-$2-binding.yaml # get temp yaml file
+      yq -i 'with(.subjects; select(all_c(.name != "'$user'")) | . += {"apiGroup": "rbac.authorization.k8s.io", "kind": "User", "name": "'$user'"} )' lab1-$2-binding.yaml &> /dev/null
+      kubectl apply -f lab1-$2-binding.yaml
+      rm lab1-$2-binding.yaml
    fi
 
 else # namespace scope role
