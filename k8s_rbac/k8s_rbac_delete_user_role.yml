@@ -1,0 +1,25 @@
+- name: Delete user from a rolebinding
+  hosts: "{{ target | default('master') }}"
+  vars:
+    local_user: ansible # ansible user
+    user: "{{ user | default('test') }}"
+    k8s_namespace: "{{ ns | default('omit')  }}"
+    role: "{{ role | default('basic-user') }}"
+    k8s_script: "../files/script/k8s_rbac_delete.sh"
+    default_roles:
+      - basic-user
+      - admin
+      - cluster-reader
+      - cluster-status
+  tasks:
+    - name: delete user from the rolebinding
+      script: 
+        cmd: "{{ k8s_script }} {{ user }} {{ ns }} {{ role }} >> script-delete-user.log"
+      when: ns is defined
+      changed_when: false
+
+    - name: delete user from the rolebinding cluster-admin
+      script: 
+        cmd: "{{ k8s_script }} {{ user }} {{ role }} >> script-delete-user.log"
+      when: ns is undefined
+      changed_when: false

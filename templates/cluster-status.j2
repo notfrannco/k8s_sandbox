@@ -6,4 +6,4 @@ metadata:
 rules:
 - apiGroups: ["", "certificates.k8s.io", "networking.k8s.io", "storage.k8s.io"]
   resources: ["componentstatuses", "namespaces","nodes", "persistentvolumes", "certificatesigningrequests", "ingressclasses", "storageclasses", "volumeattachments"]
-  verbs: ["get", "list"]
+  verbs: ["get", "list", "watch"]

@@ -2,7 +2,8 @@
   vars:
     local_user: ansible # ansible user
     user: "{{ user | default('test') }}"
-    k8s_namespace: "{{ ns | default('default')  }}"
+    #k8s_namespace: "{{ ns | default('default')  }}"
+    k8s_namespace: "{{ ns | default('omit')  }}"
     role: "{{ role | default('basic-user') }}"
     k8s_script: "../files/script/k8s_rbac_config.sh"
     default_roles:
@@ -20,6 +21,13 @@
     - name: run a script
       script: 
         cmd: "{{ k8s_script }} {{ user }} {{ ns }} {{ role }} >> script.log"
+      when:  ns is defined
+      changed_when: false
+
+    - name: run a script to create cluster admin
+      script: 
+        cmd: "{{ k8s_script }} {{ user }} {{ role }} >> script.log"
+      when:  ns is undefined
       changed_when: false
 
     - name: clean up

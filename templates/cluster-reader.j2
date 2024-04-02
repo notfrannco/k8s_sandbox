@@ -4,6 +4,6 @@ metadata:
   creationTimestamp: null
   name: cluster-reader
 rules:
-- apiGroups: ["", "*"]
-  resources: ["*"]
+- apiGroups: [""]
+  resources: ["nodes", "persistentvolumes"]
   verbs: ["get", "list", "watch"]
