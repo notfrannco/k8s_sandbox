@@ -17,7 +17,10 @@
         src: ./files/{{ values_yaml }}
         dest: /home/{{ local_user }}/
         owner: "{{ local_user }}"
+        group: "{{ local_user }}"
       when: install_metallb.changed
+
+      ## add wait for install to complete
 
     - name: Configure IPAddressPool and l2advertisement
       shell: kubectl apply -f  {{ values_yaml }}

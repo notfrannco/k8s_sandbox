@@ -65,6 +65,12 @@ metadata:
 data:
   default-setting.yaml: |-
     priority-class: longhorn-critical
+    # add custom taints
+    # doc: https://longhorn.io/docs/1.6.1/advanced-resources/deploy/customizing-default-settings/#installation
+    taint-toleration: "StorageOnly=true:NoSchedule"
+    # config for 1 longhorn node only
+    default-replica-count: "1"
+    replica-soft-anti-affinity: "true"
 ---
 # Source: longhorn/templates/storageclass.yaml
 apiVersion: v1
@@ -89,7 +95,7 @@ data:
     reclaimPolicy: "Delete"
     volumeBindingMode: Immediate
     parameters:
-      numberOfReplicas: "3"
+      numberOfReplicas: "1"
       staleReplicaTimeout: "30"
       fromBackup: ""
       fsType: "ext4"

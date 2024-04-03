@@ -1,11 +1,9 @@
 - name: Install longhorn
-  hosts: "{{ target | default('storage_nodes') }}"
+  hosts: "{{ target | default('all') }}"
   become: yes
   vars:
-    k8s_version: "1.29.3"
-    k8s_repo_version: "1.29" # just major version
-    init_script: "files/script/startup.sh"
-    postrun_script: "files/script/postrun.sh"
+    init_script: "../files/script/startup.sh"
+    postrun_script: "../files/script/postrun.sh"
   tasks:
     - fail:
        msg: "OS should be Ubuntu 22.04, not {{ ansible_distribution }} {{ ansible_distribution_version }}"
