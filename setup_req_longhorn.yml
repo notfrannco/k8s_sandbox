@@ -1,0 +1,90 @@
+- name: Install longhorn
+  hosts: "{{ target | default('storage_nodes') }}"
+  become: yes
+  vars:
+    k8s_version: "1.29.3"
+    k8s_repo_version: "1.29" # just major version
+    init_script: "files/script/startup.sh"
+    postrun_script: "files/script/postrun.sh"
+  tasks:
+    - fail:
+       msg: "OS should be Ubuntu 22.04, not {{ ansible_distribution }} {{ ansible_distribution_version }}"
+      when: ansible_distribution != 'Ubuntu' or ansible_distribution_version != '22.04'
+
+    - name: Init script
+      become: yes
+      script:
+        cmd: "{{ init_script }}"
+        chdir: /tmp/
+      changed_when: false
+
+    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+      shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
+      when: "ansible_os_family == 'Debian'"
+      changed_when: false
+
+    - name: update APT packages
+      apt:
+        update_cache: yes
+        cache_valid_time: 86400 # in seconds, 1 day
+      register: update
+
+    - name: install dependencies
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - curl
+        - jq
+        - nfs-common
+        - open-iscsi
+        - cryptsetup
+
+    - name: start and enable open-iscsi
+      service:
+        name: iscsid
+        state: started
+        enabled: yes
+
+    - name: create an empty file for the LongHorn module
+      copy:
+        content: ""
+        dest: /etc/modules-load.d/longhorn.conf
+        force: no
+
+    - name: configure modules for LongHorn
+      blockinfile:
+        path: /etc/modules-load.d/longhorn.conf
+        block: |
+             uio
+             uio_pci_generic
+             nvme-tcp
+
+    - name: load uio and uio_pci_generic
+      modprobe:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - uio
+        - uio_pci_generic
+        - nvme-tcp
+
+    - name: allocate huge pages
+      shell: "echo 1024 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages"
+      changed_when: false
+      ignore_errors: yes
+      
+    - name: make the change permanent
+      shell: echo "vm.nr_hugepages=1024" >> /etc/sysctl.conf
+      changed_when: false
+      ignore_errors: yes
+
+    - name: Post run script
+      become: yes
+      script:
+        cmd: "{{ postrun_script }}"
+        chdir: /tmp/
+      changed_when: false
+
+    #- name: reboot and wait for reboot to complete
+    #  reboot:

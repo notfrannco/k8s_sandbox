@@ -28,6 +28,17 @@
         cache_valid_time: 86400 # in seconds, 1 day
       register: update
 
+    - name: install dependencies for longhorn
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - curl
+        - jq
+        - nfs-common
+        - open-iscsi
+        - cryptsetup
+
     - name: reboot and wait for reboot to complete
       reboot:
       when: update.changed

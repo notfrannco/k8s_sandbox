@@ -8,3 +8,7 @@ k8s-worker-2 ansible_host=192.168.100.70
 [control_planes]
 #k8s-control-plane-2 ansible_host=192.168.100.70
 #k8s-control-plane-3
+
+
+[storage_nodes]
+k8s-worker-2 ansible_host=192.168.100.70
