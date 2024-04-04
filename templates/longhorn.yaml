@@ -67,9 +67,9 @@ data:
     priority-class: longhorn-critical
     # add custom taints
     # doc: https://longhorn.io/docs/1.6.1/advanced-resources/deploy/customizing-default-settings/#installation
-    taint-toleration: "StorageOnly=true:NoSchedule"
+    #taint-toleration: "StorageOnly=true:NoSchedule"
     # config for 1 longhorn node only
-    default-replica-count: "1"
+    default-replica-count: "2"
     replica-soft-anti-affinity: "true"
 ---
 # Source: longhorn/templates/storageclass.yaml
@@ -95,7 +95,7 @@ data:
     reclaimPolicy: "Delete"
     volumeBindingMode: Immediate
     parameters:
-      numberOfReplicas: "1"
+      numberOfReplicas: "2" # Change base on the arq of the cluster
       staleReplicaTimeout: "30"
       fromBackup: ""
       fsType: "ext4"
@@ -4376,11 +4376,11 @@ spec:
     spec:
       nodeSelector:
         storage: longhorn
-      tolerations:
-      - key: "StorageOnly"
-        operator: "Equal"
-        value: "true"
-        effect: "NoSchedule"
+      #tolerations:
+      #- key: "StorageOnly"
+      #  operator: "Equal"
+      #  value: "true"
+      #  effect: "NoSchedule"
       containers:
       - name: longhorn-manager
         image: longhornio/longhorn-manager:v1.6.1
@@ -4488,11 +4488,11 @@ spec:
     spec:
       nodeSelector:
         storage: longhorn
-      tolerations:  
-      - key: "StorageOnly"
-        operator: "Equal"
-        value: "true"
-        effect: "NoSchedule"
+      #tolerations:  
+      #- key: "StorageOnly"
+      #  operator: "Equal"
+      #  value: "true"
+      #  effect: "NoSchedule"
       initContainers:
         - name: wait-longhorn-manager
           image: longhornio/longhorn-manager:v1.6.1
@@ -4565,11 +4565,11 @@ spec:
     spec:
       nodeSelector:
         storage: longhorn
-      tolerations:  
-      - key: "StorageOnly"
-        operator: "Equal"
-        value: "true"
-        effect: "NoSchedule"
+      #tolerations:  
+      #- key: "StorageOnly"
+      #  operator: "Equal"
+      #  value: "true"
+      #  effect: "NoSchedule"
       serviceAccountName: longhorn-ui-service-account
       affinity:
         podAntiAffinity:
