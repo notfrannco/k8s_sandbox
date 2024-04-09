@@ -34,6 +34,7 @@
         dest: /home/{{ local_user }}/.kube/config
         remote_src: yes
         owner: "{{ local_user }}"
+        mode: "600"
 
     - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
       become: yes
@@ -69,8 +70,7 @@
     - name: install cellium using helm
       shell: helm install cilium ./cilium --namespace kube-system > cillium_install.log
       args:
-        #chdir: "/home/{{ local_user }}/cilium-main/install/kubernetes"
-        chdir: "/home/ansible/cilium-main/install/kubernetes/"
+        chdir: "/home/{{ local_user }}/cilium-main/install/kubernetes"
         creates: cillium_install.log
       ignore_errors: yes
       when: cellium.changed

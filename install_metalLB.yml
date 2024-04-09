@@ -1,4 +1,4 @@
-- name: Playbook fron install and configuration of metalLB
+- name: Playbook to install and configure metalLB
   hosts: "{{ target | default('master') }}"
   #become: yes
   vars:

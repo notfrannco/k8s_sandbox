@@ -3,7 +3,6 @@
   hosts: "{{ target | default('all') }}"
   vars:
     ansible_local_user: ansible
-    #pub_key: /home/jfranco/.ssh/id_rsa.pub
     pub_key: ../files/id_rsa.pub
   tasks:
     - name: make sure the group {{ ansible_local_user }} exists
