@@ -4,12 +4,12 @@
     local_user: ansible # ansible user
     values_yaml: longhorn.yaml
   tasks:
-    - name: Check if longhorn is present
+    - name: Longhorn Install | Check if longhorn is present
       stat:
         path: /home/{{ local_user }}/longhorn.log
       register: result
 
-    - name: copy the {{ values_yaml }}
+    - name: Longhorn Install | copy the {{ values_yaml }}
       copy:
         src: templates/{{ values_yaml }}
         dest: /home/{{ local_user }}/
@@ -17,14 +17,14 @@
         group: "{{ local_user }}"
       when: not result.stat.exists
 
-    - name: Apply longhorn yaml
+    - name: Longhorn Install | Apply longhorn yaml
       shell: kubectl apply -f  {{ values_yaml }} > longhorn.log
       args:
         chdir: "/home/{{ local_user }}"
         creates: longhorn.log
       when: not result.stat.exists
 
-    - name: clean up
+    - name: Longhorn Install | clean up
       file:
         path: /home/{{ local_user }}/{{ values_yaml }}
         state: absent

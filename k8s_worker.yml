@@ -2,12 +2,12 @@
   become: yes
   #gather_facts: false
   tasks:
-    - name: get join command
+    - name: k8s Worker | get join command
       shell: kubeadm token create --print-join-command
       register: join_command_raw
       changed_when: join_command_raw.rc != 0
 
-    - name: set join command
+    - name: k8s Worker | set join command
       set_fact:
         join_command: "{{ join_command_raw.stdout_lines[0] }}"
 
@@ -17,10 +17,10 @@
   vars:
     local_user: ansible
   tasks:
-    - name: TCP port 6443 on master is reachable from worker
+    - name: k8s Worker | TCP port 6443 on master is reachable from worker
       wait_for: "host={{ hostvars['k8s-control-plane']['ansible_default_ipv4']['address'] }} port=6443 timeout=1"
 
-    - name: join cluster
+    - name: k8s Worker | join cluster
       shell: "{{ hostvars['k8s-control-plane'].join_command }} >> node_joined.log"
       args:
         chdir: /home/{{ local_user }}

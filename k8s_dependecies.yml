@@ -10,25 +10,25 @@
        msg: "OS should be Ubuntu 22.04, not {{ ansible_distribution }} {{ ansible_distribution_version }}"
       when: ansible_distribution != 'Ubuntu' or ansible_distribution_version != '22.04'
 
-    - name: Init script
+    - name: k8s Dependencies | Init script
       become: yes
       script:
         cmd: "{{ init_script }}"
         chdir: /tmp/
       changed_when: false
 
-    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+    - name: k8s Dependencies | Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
       shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
       when: "ansible_os_family == 'Debian'"
       changed_when: false
 
-    - name: update APT packages
+    - name: k8s Dependencies | update APT packages
       apt:
         update_cache: yes
         cache_valid_time: 86400 # in seconds, 1 day
       register: update
 
-    - name: install dependencies for longhorn
+    - name: k8s Dependencies | install dependencies for longhorn
       apt:
         name: "{{ item }}"
         state: present
@@ -39,41 +39,41 @@
         - open-iscsi
         - cryptsetup
 
-    - name: reboot and wait for reboot to complete
+    - name: k8s Dependencies | reboot and wait for reboot to complete
       reboot:
       when: update.changed
 
-    - name: disable SWAP (Kubeadm requirement)
+    - name: k8s Dependencies | disable SWAP (Kubeadm requirement)
       shell: |
         swapoff -a
       changed_when: false
 
-    - name: disable SWAP in fstab (Kubeadm requirement)
+    - name: k8s Dependencies | disable SWAP in fstab (Kubeadm requirement)
       replace:
         path: /etc/fstab
         regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
         replace: '# \1'
 
-    - name: create an empty file for the Containerd module
+    - name: k8s Dependencies | create an empty file for the Containerd module
       copy:
         content: ""
         dest: /etc/modules-load.d/containerd.conf
         force: no
 
-    - name: configure modules for Containerd
+    - name: k8s Dependencies | configure modules for Containerd
       blockinfile:
         path: /etc/modules-load.d/containerd.conf
         block: |
              overlay
              br_netfilter
 
-    - name: create an empty file for Kubernetes sysctl params
+    - name: k8s Dependencies | create an empty file for Kubernetes sysctl params
       copy:
         content: ""
         dest: /etc/sysctl.d/99-kubernetes-cri.conf
         force: no
 
-    - name: configure sysctl params for Kubernetes
+    - name: k8s Dependencies | configure sysctl params for Kubernetes
       lineinfile:
         path: /etc/sysctl.d/99-kubernetes-cri.conf
         line: "{{ item }}"
@@ -83,7 +83,7 @@
         - 'net.bridge.bridge-nf-call-ip6tables = 1'
 
       #4.2.6	Ensure that the --protect-kernel-defaults argument is set to true
-    - name: create an empty file for kubelet sysctl params
+    - name: k8s Dependencies | create an empty file for kubelet sysctl params
       copy:
         content: ""
         dest: /etc/sysctl.d/90-kubelet.conf
@@ -91,7 +91,7 @@
       tags:
         - cis_4_2_6_ensure_protect_kernel_defaults_argument
 
-    - name: configure sysctl params for Kubelet
+    - name: k8s Dependencies | configure sysctl params for Kubelet
       lineinfile:
         path: /etc/sysctl.d/90-kubelet.conf
         line: "{{ item }}"
@@ -104,73 +104,73 @@
 
 
 
-    - name: apply sysctl params without reboot
+    - name: k8s Dependencies | apply sysctl params without reboot
       command: sysctl --system
       changed_when: false
 
-    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+    - name: k8s Dependencies | Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
       shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
       when: "ansible_os_family == 'Debian'"
       changed_when: false
 
-    - name: install APT Transport HTTPS
+    - name: k8s Dependencies | install APT Transport HTTPS
       apt:
         name: apt-transport-https
         state: present
 
-    - name: add Docker apt-key
+    - name: k8s Dependencies | add Docker apt-key
       get_url:
         url: https://download.docker.com/linux/ubuntu/gpg
         dest: /etc/apt/keyrings/docker-apt-keyring.asc
         mode: '0644'
         force: true
 
-    - name: add Docker's APT repository
+    - name: k8s Dependencies | add Docker's APT repository
       apt_repository:
         repo: "deb [arch={{ 'amd64' if ansible_architecture == 'x86_64' else 'arm64' }} signed-by=/etc/apt/keyrings/docker-apt-keyring.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
         state: present
         update_cache: yes
 
-    - name: add Kubernetes apt-key
+    - name: k8s Dependencies | add Kubernetes apt-key
       get_url:
         url: https://pkgs.k8s.io/core:/stable:/v{{ k8s_repo_version }}/deb/Release.key
         dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
         mode: '0644'
         force: true
 
-    - name: add Kubernetes' APT repository
+    - name: k8s Dependencies | add Kubernetes' APT repository
       apt_repository:
         repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc] https://pkgs.k8s.io/core:/stable:/v{{ k8s_repo_version }}/deb/ /"
         state: present
         update_cache: yes
 
-    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+    - name: k8s Dependencies | Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
       shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
       when: "ansible_os_family == 'Debian'"
       changed_when: false
 
-    - name: install Containerd
+    - name: k8s Dependencies | install Containerd
       apt:
         name: containerd.io
         state: present
 
-    - name: create Containerd directory
+    - name: k8s Dependencies | create Containerd directory
       file:
         path: /etc/containerd
         state: directory
 
-    - name: add Containerd configuration
+    - name: k8s Dependencies | add Containerd configuration
       shell: /usr/bin/containerd config default > /etc/containerd/config.toml
       changed_when: false
 
-    - name: configuring the systemd cgroup driver for Containerd
+    - name: k8s Dependencies | configuring the systemd cgroup driver for Containerd
       lineinfile:
         path: /etc/containerd/config.toml
         regexp: '            SystemdCgroup = false'
         line: '            SystemdCgroup = true'
       changed_when: false
 
-    - name: enable the Containerd service and start it
+    - name: k8s Dependencies | enable the Containerd service and start it
       systemd:
         name: containerd
         state: restarted
@@ -178,7 +178,7 @@
         daemon-reload: yes
       changed_when: false
 
-    - name: configure crictl default config file for containerd
+    - name: k8s Dependencies | configure crictl default config file for containerd
       template:
         src: templates/crictl.j2
         dest: /etc/crictl.yaml
@@ -188,12 +188,12 @@
       tags:
         - temp
 
-    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+    - name: k8s Dependencies | Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
       shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
       when: "ansible_os_family == 'Debian'"
       changed_when: false
 
-    - name: install Kubelet
+    - name: k8s Dependencies | install Kubelet
       apt:
         #name: kubelet=1.29.*
         name: kubelet={{ k8s_version }}*
@@ -202,42 +202,42 @@
       tags:
         - install_kubelet
 
-    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+    - name: k8s Dependencies | Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
       shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
       when: "ansible_os_family == 'Debian'"
       changed_when: false
 
-    - name: install Kubeadm
+    - name: k8s Dependencies | install Kubeadm
       apt:
         name: kubeadm={{ k8s_version }}*
         state: present
 
-    - name: enable the Kubelet service, and enable it persistently
+    - name: k8s Dependencies | enable the Kubelet service, and enable it persistently
       service:
         name: kubelet
         enabled: yes
 
-    - name: load br_netfilter kernel module
+    - name: k8s Dependencies | load br_netfilter kernel module
       modprobe:
       #community.general.modprobe:
         name: br_netfilter
         state: present
 
-    - name: set bridge-nf-call-iptables
+    - name: k8s Dependencies | set bridge-nf-call-iptables
       sysctl:
         name: net.bridge.bridge-nf-call-iptables
         value: 1
 
-    - name: set ip_forward
+    - name: k8s Dependencies | set ip_forward
       sysctl:
         name: net.ipv4.ip_forward
         value: 1
 
-    - name: reboot and wait for reboot to complete
+    - name: k8s Dependencies | reboot and wait for reboot to complete
       reboot:
       when: update.changed
 
-    - name: Post run script
+    - name: k8s Dependencies | Post run script
       become: yes
       script:
         cmd: "{{ postrun_script }}"
@@ -251,25 +251,25 @@
     init_script: "files/script/startup.sh"
     postrun_script: "files/script/postrun.sh"
   tasks:
-    - name: Init script
+    - name: k8s Dependencies | Init script
       become: yes
       script:
         cmd: "{{ init_script }}"
         chdir: /tmp/
       changed_when: false
 
-    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+    - name: k8s Dependencies | Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
       shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
       when: "ansible_os_family == 'Debian'"
       changed_when: false
 
-    - name: install Kubectl
+    - name: k8s Dependencies | install Kubectl
       apt:
         name: kubectl={{ k8s_version }}*
         state: present
         force: yes # allow downgrades
 
-    - name: install helm with snap
+    - name: k8s Dependencies | install helm with snap
       snap:
         name: helm
         classic: yes
@@ -277,19 +277,19 @@
       tags:
         - snap
 
-    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+    - name: k8s Dependencies | Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
       shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
       when: "ansible_os_family == 'Debian'"
       changed_when: false
 
-    - name: install etcd-client
+    - name: k8s Dependencies | install etcd-client
       apt:
         name: etcd-client
         state: present
       tags:
         - snap
 
-    - name: Post run script
+    - name: k8s Dependencies | Post run script
       become: yes
       script:
         cmd: "{{ postrun_script }}"

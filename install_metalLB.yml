@@ -5,14 +5,14 @@
     local_user: ansible # ansible user
     values_yaml: metalLB-values.yml
   tasks:
-    - name: Install MetalLB manifest
+    - name: Install MetalLB | Install MetalLB manifest
       shell: kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.3/config/manifests/metallb-native.yaml >> metalLB_manifest_install.log
       args:
         chdir: "/home/{{ local_user }}"
         creates: metalLB_manifest_install.log
       register: install_metallb
 
-    - name: copy the {{ values_yaml }}
+    - name: Install MetalLB | copy the {{ values_yaml }}
       copy:
         src: ./files/{{ values_yaml }}
         dest: /home/{{ local_user }}/
@@ -21,17 +21,17 @@
       when: install_metallb.changed
 
       ## add wait for install to complete
-    - name: wait for the metallb deploy
+    - name: Install MetalLB | wait for the metallb deploy
       pause:
         seconds: 50
 
-    - name: Configure IPAddressPool and l2advertisement
+    - name: Install MetalLB | Configure IPAddressPool and l2advertisement
       shell: kubectl apply -f  {{ values_yaml }}
       args:
         chdir: "/home/{{ local_user }}"
       when: install_metallb.changed
 
-    - name: clean up
+    - name: Install MetalLB | clean up
       file:
         path: /home/{{ local_user }}/{{ values_yaml }}
         state: absent

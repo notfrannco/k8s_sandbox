@@ -5,20 +5,20 @@
     init_script: "files/script/startup.sh"
     postrun_script: "files/script/postrun.sh"
   tasks:
-    - name: Init script
+    - name: k8s Master | Init script
       become: yes
       script:
         cmd: "{{ init_script }}"
         chdir: /tmp/
       changed_when: false
 
-    - name: initialize the cluster (this could take some time)
+    - name: k8s Master | initialize the cluster (this could take some time)
       shell: sudo kubeadm init --control-plane-endpoint={{ ansible_default_ipv4.address }}:6443 --upload-certs >> cluster_initialized.log
       args:
         chdir: "/home/{{ local_user }}"
         creates: cluster_initialized.log
 
-    - name: create .kube directory
+    - name: k8s Master | create .kube directory
       become: yes
       become_user: "{{ local_user }}"
       file:
@@ -26,9 +26,8 @@
         state: directory
         mode: 0755
 
-    - name: copy admin.conf to user's kube config
+    - name: k8s Master | copy admin.conf to user's kube config
       become: yes
-      #become_user: "{{ local_user }}"
       copy:
         src: /etc/kubernetes/admin.conf
         dest: /home/{{ local_user }}/.kube/config
@@ -36,13 +35,13 @@
         owner: "{{ local_user }}"
         mode: "600"
 
-    - name: Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+    - name: k8s Master | Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
       become: yes
       shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
       when: "ansible_os_family == 'Debian'"
       changed_when: false
 
-    - name: make sure curl is present
+    - name: k8s Master | make sure curl is present
       become: yes
       apt:
         name: curl
@@ -57,7 +56,7 @@
     #    chdir: $HOME
     #    creates: pod_network_setup.log
 
-    - name: download Cellium 
+    - name: k8s Master | download Cellium 
       unarchive:
         src: https://github.com/cilium/cilium/archive/main.tar.gz
         dest: "/home/{{ local_user }}"
@@ -67,7 +66,7 @@
         group: "{{ local_user }}"
       register:  cellium
 
-    - name: install cellium using helm
+    - name: k8s Master | install cellium using helm
       shell: helm install cilium ./cilium --namespace kube-system > cillium_install.log
       args:
         chdir: "/home/{{ local_user }}/cilium-main/install/kubernetes"
@@ -75,7 +74,7 @@
       ignore_errors: yes
       when: cellium.changed
 
-    - name: Configure cellium cli client
+    - name: k8s Master | Configure cellium cli client
       script:
         cmd: files/cni/cellium_cli.sh
       ignore_errors: yes
@@ -83,7 +82,7 @@
       tags:
         - custom_script
 
-    - name: Post run script
+    - name: k8s Master | Post run script
       become: yes
       script:
         cmd: "{{ postrun_script }}"
