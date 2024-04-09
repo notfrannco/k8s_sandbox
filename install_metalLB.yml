@@ -23,7 +23,7 @@
       ## add wait for install to complete
     - name: wait for the metallb deploy
       pause:
-        seconds: 40
+        seconds: 50
 
     - name: Configure IPAddressPool and l2advertisement
       shell: kubectl apply -f  {{ values_yaml }}

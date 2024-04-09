@@ -272,7 +272,8 @@
     - name: install helm with snap
       snap:
         name: helm
-        classic: true
+        classic: yes
+        state: present
       tags:
         - snap
 
