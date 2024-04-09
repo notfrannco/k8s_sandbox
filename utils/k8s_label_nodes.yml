@@ -1,0 +1,17 @@
+---
+- name: Add label to all worker
+  hosts: master
+  gather_facts: true
+  strategy: free
+  #become: true
+  vars:
+    label: ""
+    type: "add" # default add
+  tasks:
+    - name: Add the label {{ label }}
+      shell: kubectl get nodes | awk '$0 !~ /control-plane/' | awk '{ print $1 }' | awk '(NR>1)' | while read -r line; do kubectl label node $line {{ label }}; done > test.log
+      when: type == "add"
+
+    - name: Remove the label {{ label }}
+      shell: kubectl get nodes | awk '$0 !~ /control-plane/' | awk '{ print $1 }' | awk '(NR>1)' | while read -r line; do kubectl label node $line $(echo "{{ label }}" | cut -d '=' -f 1 )-; done > test.log
+      when: type == "remove"
