@@ -1,0 +1,9 @@
+- name: Playbook to wait for configuration to finish
+  hosts: "{{ target | default('master') }}"
+  vars:
+    time: 50
+  tasks:
+    - name: wait for the metallb deploy
+      pause:
+        #seconds: 50
+        seconds: "{{ time }}"

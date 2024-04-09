@@ -5,7 +5,7 @@
   strategy: free
   #become: true
   vars:
-    label: ""
+    label: "storage=longhorn" # default 
     type: "add" # default add
   tasks:
     - name: Add the label {{ label }}

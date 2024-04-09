@@ -1,0 +1,31 @@
+---
+- name: Install and configure dependencies
+  ansible.builtin.import_playbook: k8s_dependecies.yml
+
+- name: Install and configure kubernetes Control Plane
+  ansible.builtin.import_playbook: k8s_master.yml
+
+- name: Wait for the cluster network plugin to fully start
+  ansible.builtin.import_playbook: utils/wait_playbook.yml
+  vars:
+    time: 80
+
+- name: Install and configure kubernetes Workers
+  ansible.builtin.import_playbook: k8s_worker.yml
+
+- name: Wait for the cluster to fully start 
+  ansible.builtin.import_playbook: utils/wait_playbook.yml
+  vars:
+    time: 60
+
+- name: Install and configure MetalLB
+  ansible.builtin.import_playbook: install_metalLB.yml
+
+- name: Install and configure prereq of longhorn
+  ansible.builtin.import_playbook:  utils/setup_req_longhorn.yml
+
+- name: label the nodes for longhorn
+  ansible.builtin.import_playbook: utils/k8s_label_nodes.yml
+
+- name: Install Longhorn
+  ansible.builtin.import_playbook: install_longhorn.yml
