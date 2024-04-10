@@ -116,3 +116,34 @@ agrega el role "basic-user" al usuario "jose" en el namespace "default"<br />
 Configuracion default de pki, se deben especificar el usuario y los dias de validez <br />
  `$ ansible-playbook k8s_rbac/k8s_create_credential.yml -e user=jose -e days=30` 
 
+
+# MetalLB
+## Configure MetalLB
+agrega el rango de IPs en "files/metalLB-values.yml"<br />
+
+ ```
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: first-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - 192.168.100.77-192.168.100.83  **# set IP range**
+
+```
+
+  <br />Install MetalLB <br />
+ `$ ansible-playbook install_metalLB.yml `
+
+
+# Longhorn
+## Configure longhorn
+Configuracion de prerequisitos y dependencias<br />
+ `$ ansible-playbook utils/setup_req_longhorn.yml` 
+
+ Configuracion de labels para los nodos a ser utilizados por longhorn, configurar acorde a necesidad<br />
+ `$ ansible-playbook utils/k8s_label_nodes.yml` 
+
+ Install longhorn <br />
+ `$ ansible-playbook install_longhorn.yml` 
