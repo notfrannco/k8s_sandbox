@@ -35,3 +35,13 @@ Excluyendo el nombre "***k8s-control-plane***" del grupo "***masters***", todos 
 
 
 
+## Configurar la variable de virtual IP
+Agregar o modificar la variable de entorno con la virtual IP a ser utilizada $HOME/inventories/dev/group_vars/all.yaml .<br />
+Ejemplo <br />
+**all.yml**
+```
+---
+
+kvip: "192.168.100.77" # virtual IP for kube-vip
+
+```

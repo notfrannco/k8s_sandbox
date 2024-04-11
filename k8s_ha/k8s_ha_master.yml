@@ -2,8 +2,8 @@
   #become: yes
   vars:
     local_user: ansible # ansible user
-    init_script: "files/script/startup.sh"
-    postrun_script: "files/script/postrun.sh"
+    init_script: "../files/script/startup.sh"
+    postrun_script: "../files/script/postrun.sh"
   tasks:
     - name: k8s Master | Init script
       become: yes
@@ -95,7 +95,7 @@
 
     - name: k8s Master | Configure cellium cli client
       script:
-        cmd: files/cni/cellium_cli.sh
+        cmd: ../files/cni/cellium_cli.sh
       ignore_errors: yes
       when: cellium.changed
       tags:
