@@ -147,3 +147,22 @@ Configuracion de prerequisitos y dependencias<br />
 
  Install longhorn <br />
  `$ ansible-playbook install_longhorn.yml` 
+
+
+
+ <br /> <br />
+
+# Kubernetes en HA con kube-vip
+Validar la documentacion en ***k8s_ha/README.md*** <br />
+
+Primero instalamos las dependencias necesarias, en todos los nodos<br />
+ `$ ansible-playbook k8s_dependecies.yml` 
+
+Configuramos el control plane inicial (kubeadm init)<br />
+ `$ ansible-playbook k8s_ha/k8s_ha_master.yml` 
+
+Configuramos el resto de control planes <br />
+ `$ ansible-playbook k8s_ha/k8s_ha_add_master.yml` 
+
+Por ultimo configuramos los workers <br />
+ `$ ansible-playbook k8s_ha/k8s_ha_worker.yml` 
