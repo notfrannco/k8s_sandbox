@@ -2,11 +2,17 @@
 # include the hardening for the specific OS family
 
 # initial setup 
-- include: setup.yaml
+- import_tasks: setup.yaml
+#- include: setup.yaml
   when: ansible_os_family == "Debian"
 
-- include: cis-level-1-ubuntu2204.yaml
+#- import_tasks: cis-level-1-ubuntu2204.yaml
+#- include: cis-level-1-ubuntu2204.yaml
+#  when: ansible_os_family == "Debian"
+
+- import_tasks: cis-bash.yml
   when: ansible_os_family == "Debian"
 
-- include: scap_report.yaml
+- import_tasks: scap_report.yaml
+#- include: scap_report.yaml
   when: ansible_os_family == "Debian"
