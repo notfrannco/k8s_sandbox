@@ -23,3 +23,6 @@ k8s_master.sh
 
 6) configure more worker
 k8s_worker.sh
+
+7) final config for longhorn, metalLB, etc.
+k8s_config.sh
