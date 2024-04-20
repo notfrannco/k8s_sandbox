@@ -83,6 +83,3 @@
         cmd: "{{ postrun_script }}"
         chdir: /tmp/
       changed_when: false
-
-    #- name: reboot and wait for reboot to complete
-    #  reboot:

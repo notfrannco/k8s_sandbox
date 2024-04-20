@@ -1,10 +1,13 @@
-1) configure the inventories/dev/hosts, list your VMs for the master and workers
+1) run the ansible setup script
+ansible_setup.sh
 
-2) configure your ssh public key and copy the file in files/id_rsa.pub
-  - you can set up your ssh key using the ssh-keygen command with all default values
 
-3) configure the ansible admin user, use your default admin user
-ansible-playbook utils/add_ansible_user.yml -u jfranco -b -k
+2) configure CIS hardening
+cis_bash.sh
 
-4) run the main playbook
-ansible-playbook main.yml
+3) install dependencies (reboot need it after this)
+k8s_dependencies_all.sh             # on all nodes
+k8s_dependencies_master.sh          # only on the master nodes
+
+
+4) init master, playbook to start the init control-plane

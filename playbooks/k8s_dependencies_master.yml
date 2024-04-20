@@ -1,0 +1,35 @@
+- hosts: localhost
+  become: yes
+  vars:
+    k8s_version: "1.29.3"
+  tasks:
+    - name: k8s Dependencies | Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+      shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
+      when: "ansible_os_family == 'Debian'"
+      changed_when: false
+
+    - name: k8s Dependencies | install Kubectl
+      apt:
+        name: kubectl={{ k8s_version }}*
+        state: present
+        force: yes # allow downgrades
+
+    - name: k8s Dependencies | install helm with snap
+      snap:
+        name: helm
+        classic: yes
+        state: present
+      tags:
+        - snap
+
+    - name: k8s Dependencies | Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+      shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
+      when: "ansible_os_family == 'Debian'"
+      changed_when: false
+
+    - name: k8s Dependencies | install etcd-client
+      apt:
+        name: etcd-client
+        state: present
+      tags:
+        - snap

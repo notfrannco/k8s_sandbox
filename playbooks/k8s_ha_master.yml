@@ -1,0 +1,102 @@
+- hosts: localhost
+  #become: yes
+  vars:
+    local_user: ansible # ansible user
+    kvip: "192.168.100.77" # virtual IP for kube-vip
+  tasks:
+    - name: Copy the default kube-vip yml file
+      become: yes
+      template:
+        src: templates/kube-vip.j2
+        dest: /etc/kubernetes/manifests/kube-vip.yaml
+        owner: root
+        group: root
+        mode: "0644"
+      tags:
+        - test
+
+    # know issues with kubeadm init in the 29 version
+    # https://github.com/kube-vip/kube-vip/issues/684
+    - name: Workaround issue with kube-vip on k8s 29 on kubeadm init phase
+      shell: "sed -i 's#path: /etc/kubernetes/admin.conf#path: /etc/kubernetes/super-admin.conf#' /etc/kubernetes/manifests/kube-vip.yaml"
+      become: yes
+      tags:
+        - issue_684
+
+    - name: k8s Master | initialize the cluster (this could take some time)
+      shell: sudo kubeadm init --control-plane-endpoint={{ kvip }}:6443 --upload-certs >> cluster_initialized.log
+      args:
+        chdir: "/home/{{ local_user }}"
+        creates: cluster_initialized.log
+
+    - name: k8s Master | create .kube directory
+      become: yes
+      become_user: "{{ local_user }}"
+      file:
+        path: $HOME/.kube
+        state: directory
+        mode: 0755
+
+    - name: k8s Master | copy admin.conf to user's kube config
+      become: yes
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/{{ local_user }}/.kube/config
+        remote_src: yes
+        owner: "{{ local_user }}"
+        mode: "600"
+
+    - name: k8s Master | Wait for /var/lib/dpkg/lock-frontend to be released (run update on bg)
+      become: yes
+      shell: while lsof /var/lib/dpkg/lock-frontend ; do sleep 10; done;
+      when: "ansible_os_family == 'Debian'"
+      changed_when: false
+
+    - name: k8s Master | make sure curl is present
+      become: yes
+      apt:
+        name: curl
+        state: present
+
+    #- name: install Pod network
+    #  become: yes
+    #  become_user: "{{ local_user }}"
+    #  #shell: kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml >> pod_network_setup.log
+    #  shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml >> pod_network_setup.log
+    #  args:
+    #    chdir: $HOME
+    #    creates: pod_network_setup.log
+
+    - name: k8s Master | download Cellium 
+      unarchive:
+        src: https://github.com/cilium/cilium/archive/main.tar.gz
+        dest: "/home/{{ local_user }}"
+        creates: cilium-main
+        remote_src: yes
+        owner: "{{ local_user }}"
+        group: "{{ local_user }}"
+      register:  cellium
+
+    - name: k8s Master | install cellium using helm
+      shell: helm install cilium ./cilium --namespace kube-system > cillium_install.log
+      args:
+        chdir: "/home/{{ local_user }}/cilium-main/install/kubernetes"
+        creates: cillium_install.log
+      ignore_errors: yes
+      when: cellium.changed
+
+    - name: k8s Master | Configure cellium cli client
+      script:
+        cmd: ../files/cni/cellium_cli.sh
+      ignore_errors: yes
+      when: cellium.changed
+      tags:
+        - custom_script
+
+    # know issues with kubeadm init in the 29 version
+    # https://github.com/kube-vip/kube-vip/issues/684
+    - name: Workaround issue with kube-vip on k8s 29 on kubeadm init phase, post init
+      shell: "sed -i 's#path: /etc/kubernetes/super-admin.conf#path: /etc/kubernetes/admin.conf#' /etc/kubernetes/manifests/kube-vip.yaml"
+      become: yes
+      tags:
+        - issue_684
