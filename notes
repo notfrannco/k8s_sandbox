@@ -11,3 +11,4 @@ k8s_dependencies_master.sh          # only on the master nodes
 
 
 4) init master, playbook to start the init control-plane
+k8s_init_master.sh
