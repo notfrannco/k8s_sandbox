@@ -156,7 +156,7 @@
 
     - name: k8s Dependencies | configure crictl default config file for containerd
       template:
-        src: templates/crictl.j2
+        src: ../templates/crictl.j2
         dest: /etc/crictl.yaml
         owner: root
         group: root

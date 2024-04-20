@@ -7,7 +7,7 @@
     - name: Copy the default kube-vip yml file
       become: yes
       template:
-        src: templates/kube-vip.j2
+        src: ../templates/kube-vip.j2
         dest: /etc/kubernetes/manifests/kube-vip.yaml
         owner: root
         group: root
@@ -52,6 +52,23 @@
       when: "ansible_os_family == 'Debian'"
       changed_when: false
 
+    - name: k8s Master | create .kube directory for the root user
+      become: yes
+      file:
+        path: /root/.kube
+        state: directory
+        mode: 0755
+
+    - name: k8s Master | copy admin.conf for the root user
+      become: yes
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /root/.kube/config
+        remote_src: yes
+        owner: "root"
+        mode: "600"
+
+
     - name: k8s Master | make sure curl is present
       become: yes
       apt:
@@ -79,6 +96,7 @@
 
     - name: k8s Master | install cellium using helm
       shell: helm install cilium ./cilium --namespace kube-system > cillium_install.log
+      become_user: "{{ local_user }}"
       args:
         chdir: "/home/{{ local_user }}/cilium-main/install/kubernetes"
         creates: cillium_install.log

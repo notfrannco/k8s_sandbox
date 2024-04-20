@@ -12,7 +12,7 @@ while systemctl is-active --quiet unattended-upgrades.service; do sleep 1; done 
 #############################################################################################################
 
 
-sudo ansible-playbook playbooks/k8s_dependencies_all.yml
+sudo ansible-playbook playbooks/k8s_dependencies_all.yml --vault-password-file vault_password.txt
 
 
 
