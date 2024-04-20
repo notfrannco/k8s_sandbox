@@ -10,5 +10,11 @@ k8s_dependencies_all.sh             # on all nodes
 k8s_dependencies_master.sh          # only on the master nodes
 
 
-4) init master, playbook to start the init control-plane
+4) init master, playbook to start the init control-plane (ONLY FOR THE INIT CLUSTER STRAT)
 k8s_init_master.sh
+
+5) configure more control plane
+k8s_master.sh
+
+
+6) configure more worker
