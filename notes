@@ -1,3 +1,6 @@
+# clone the proyect
+git clone --branch ansible-local https://github.com/notfrannco/k8s_sandbox.git
+
 1) run the ansible setup script
 ansible_setup.sh
 
@@ -11,6 +14,7 @@ k8s_dependencies_master.sh          # only on the master nodes
 
 
 4) init master, playbook to start the init control-plane (ONLY FOR THE INIT CLUSTER STRAT)
+# dale tiempo que inicie
 k8s_init_master.sh
 
 5) configure more control plane

@@ -33,7 +33,7 @@
     - name: Copy the default kube-vip yml file
       become: yes
       template:
-        src: templates/kube-vip.j2
+        src: ../templates/kube-vip.j2
         dest: /etc/kubernetes/manifests/kube-vip.yaml
         owner: root
         group: root
