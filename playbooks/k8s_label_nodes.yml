@@ -1,9 +1,8 @@
 ---
 - name: Add label to all worker
-  hosts: master
+  hosts: localhost
   gather_facts: true
   strategy: free
-  #become: true
   vars:
     label: "storage=longhorn" # default 
     type: "add" # default add

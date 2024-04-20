@@ -17,7 +17,7 @@ k8s_dependencies_master.sh          # only on the master nodes
 # dale tiempo que inicie
 k8s_init_master.sh
 
-5) configure more control plane
+5)(OPTIONAL) configure more control plane (for adding more master)
 k8s_master.sh
 
 

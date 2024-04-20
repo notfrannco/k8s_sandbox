@@ -11,7 +11,7 @@
 
     - name: Longhorn Install | copy the {{ values_yaml }}
       copy:
-        src: templates/{{ values_yaml }}
+        src: ../templates/{{ values_yaml }}
         dest: /home/{{ local_user }}/
         owner: "{{ local_user }}"
         group: "{{ local_user }}"
