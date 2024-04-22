@@ -1,6 +1,0 @@
-- name: Run hardening configuration
-  script:
-    cmd: files/script/cis_bash.sh
-  ignore_errors: yes
-  tags:
-    - custom_script
